@@ -7,6 +7,7 @@ import jakarta.validation.constraints.NotBlank;
 import lombok.*;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 
 @Getter
 @Setter
@@ -35,6 +36,8 @@ public class Product {
 
     @Column(name = "image_url")
     private String imageUrl;
+
+    private LocalDateTime createDate;
 
     @Column(nullable = false)
     private Integer status = 1; // Default active

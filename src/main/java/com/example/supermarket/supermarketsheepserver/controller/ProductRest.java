@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
@@ -22,9 +23,8 @@ public class ProductRest {
     @GetMapping
     public ResponseEntity<List<Product>> getAllProducts() {
         List<Product> products = productService.getAllProducts();
-        return ResponseEntity.ok(products);
+        return ResponseEntity.ok(products != null ? products : Collections.emptyList());
     }
-
     // Lấy 1 sản phẩm theo ID
     @GetMapping("/{id}")
     public ResponseEntity<Product> getProductById(@PathVariable Long id) {
@@ -41,6 +41,22 @@ public class ProductRest {
     }
 
     // Cập nhật sản phẩm
+    @PutMapping("/{id}")
+    public ResponseEntity<Product> updateProduct(@PathVariable Long id, @RequestBody ProductRequest productRequest) {
+        Optional<Product> existingProduct = productService.getProductById(id);
+        if (existingProduct.isPresent()) {
+            Product updatedProduct = productService.updateProduct(id, productRequest);
+            return ResponseEntity.ok(updatedProduct);
+        } else {
+            return ResponseEntity.notFound().build();
+        }
+    }
 
+    // Thay đổi trạng thái sản phẩm
+    @PutMapping("/{id}/status")
+    public ResponseEntity<Product> changeProductStatus(@PathVariable Long id, @RequestParam Integer status) {
+        Product updatedProduct = productService.changeProductStatus(id, status);
+        return ResponseEntity.ok(updatedProduct);
+    }
 
 }
