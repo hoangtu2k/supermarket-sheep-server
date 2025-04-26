@@ -101,7 +101,7 @@ public class ImportedGoodsService {
         Product sp = new Product();
         sp.setCode("SP" + System.currentTimeMillis());
         sp.setName(productRequest.getName());
-        sp.setDescription(productRequest.getDescribe());
+        sp.setDescription(productRequest.getDescription());
         sp.setPrice(productRequest.getPrice());
         sp.setQuantity(0); // Ban đầu = 0
         sp.setProductType(productTypeRepository.findById(productRequest.getProductTypeId()).orElseThrow());

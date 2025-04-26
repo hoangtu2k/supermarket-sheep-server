@@ -10,9 +10,10 @@ import java.math.BigDecimal;
 public class ProductRequest {
 
     private Long id;
-    private Long code;
+    private String code;
     private String name;
-    private String describe;
+    private String description;
+    private Double weight;
     private BigDecimal price;
     private Integer quantity;
     private String imageUrl;
