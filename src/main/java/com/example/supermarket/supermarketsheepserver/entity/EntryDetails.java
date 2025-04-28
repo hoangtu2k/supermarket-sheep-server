@@ -28,6 +28,7 @@ public class EntryDetails {
 
     private int quantity;
     private BigDecimal import_price;
+    private BigDecimal discount_price;
     private BigDecimal payment;
 
 }

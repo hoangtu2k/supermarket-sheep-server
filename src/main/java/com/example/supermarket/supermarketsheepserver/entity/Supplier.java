@@ -20,12 +20,13 @@ public class Supplier {
     private Long id;
     private String code;
     private String name;
-    private String address;
     private String phone;
     private String email;
+    private String address;
+    private Integer status;
 
     @JsonIgnore
     @OneToMany(mappedBy = "supplier")
-    private Set<Product> accounts = new HashSet<Product>();
+    private Set<Product> products = new HashSet<Product>();
 
 }

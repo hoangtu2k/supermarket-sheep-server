@@ -25,6 +25,11 @@ public class EntryForm {
     private BigDecimal total;
     private String note;
     private LocalDateTime entry_date;
+    private String creator;
+    private String updater;
+    private String importer;
+
+    private Integer status;
 
     @ManyToOne
     @JoinColumn(name = "user_id")
