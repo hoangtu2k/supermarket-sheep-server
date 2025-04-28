@@ -12,11 +12,12 @@ public class UserRequest {
     private String name;
     private String username;
     private String password;
+    private String rePassword;
     private String phone;
     private String email;
     private Date dateOfBirth;
     private String address;
     private Integer status;
-    private String roleName;
-    private Long accountId;
+    private Long roleId;
+
 }

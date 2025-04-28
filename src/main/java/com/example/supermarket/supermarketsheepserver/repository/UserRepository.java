@@ -11,6 +11,9 @@ import java.util.List;
 @Repository
 public interface UserRepository extends JpaRepository<User, Long> {
 
+    boolean existsByUsernameAndIdNot(String username, Long id);
+    boolean existsByUsername(String username);
+
     @Query("SELECT u FROM User u WHERE u.username = :identifier OR u.email = :identifier OR u.phone = :identifier")
     User findByUser(@Param("identifier") String identifier);
 
