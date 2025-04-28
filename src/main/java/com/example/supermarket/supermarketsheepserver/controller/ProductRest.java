@@ -25,6 +25,7 @@ public class ProductRest {
         List<Product> products = productService.getAllProducts();
         return ResponseEntity.ok(products != null ? products : Collections.emptyList());
     }
+
     // Lấy 1 sản phẩm theo ID
     @GetMapping("/{id}")
     public ResponseEntity<Product> getProductById(@PathVariable Long id) {

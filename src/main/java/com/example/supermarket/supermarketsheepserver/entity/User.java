@@ -22,18 +22,16 @@ public class User {
     private  Long id;
     private String code;
     private String name;
+    private String username;
+    private String password;
     private String phone;
     private String email;
     private Date dateOfBirth;
-    private Integer gender;
     private String address;
     private Integer status;
-    private String image;
-
 
     @ManyToOne
-    @JoinColumn(name = "account_id")
-    private Account account;
-
+    @JoinColumn(name = "role_id")
+    private Role role;
 
 }

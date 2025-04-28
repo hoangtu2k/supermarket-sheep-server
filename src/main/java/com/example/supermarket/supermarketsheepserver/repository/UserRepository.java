@@ -11,14 +11,15 @@ import java.util.List;
 @Repository
 public interface UserRepository extends JpaRepository<User, Long> {
 
-    @Query("SELECT u FROM User u WHERE u.account.username = :identifier OR u.email = :identifier OR u.phone = :identifier")
+    @Query("SELECT u FROM User u WHERE u.username = :identifier OR u.email = :identifier OR u.phone = :identifier")
     User findByUser(@Param("identifier") String identifier);
 
     @Query(value = "select u from User u WHERE u.id = :id")
     User getById(@Param("id") Long id);
 
-    @Query(value = "select u from User u")
-    List<User> getAllUser();
+    // Truy vấn để lấy tất cả sản phẩm và sắp xếp theo ngày tạo giảm dần
+    @Query(value = "SELECT * FROM User", nativeQuery = true)
+    List<User> findAllUsersOrderedByCreateDate();
 
 
 }

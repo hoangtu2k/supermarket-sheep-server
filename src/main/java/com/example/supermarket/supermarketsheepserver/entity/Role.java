@@ -23,6 +23,6 @@ public class Role {
 
     @JsonIgnore
     @OneToMany(mappedBy = "role")
-    private Set<Account> accounts = new HashSet<Account>();
+    private Set<User> users = new HashSet<User>();
 
 }

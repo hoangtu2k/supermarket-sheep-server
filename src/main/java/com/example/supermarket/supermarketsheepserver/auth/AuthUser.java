@@ -45,7 +45,7 @@ public class AuthUser {
 
         }
         // So sánh mật khẩu đã nhập với mật khẩu đã mã hóa
-        if (!passwordEncoder.matches(loginRequest.getPassword(), user.getAccount().getPassword())) {
+        if (!passwordEncoder.matches(loginRequest.getPassword(), user.getPassword())) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Sai mat khau!");
         }
         if(user.getStatus() != 1){
