@@ -1,9 +1,7 @@
 package com.example.supermarket.supermarketsheepserver.service;
 
-import com.example.supermarket.supermarketsheepserver.entity.Product;
 import com.example.supermarket.supermarketsheepserver.entity.Supplier;
 import com.example.supermarket.supermarketsheepserver.repository.SupplierRepository;
-import com.example.supermarket.supermarketsheepserver.request.ProductRequest;
 import com.example.supermarket.supermarketsheepserver.request.SupplierRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -41,11 +39,30 @@ public class SupplierService {
             supplier.setCode(supplierRequest.getCode());
         }
         supplier.setName(supplierRequest.getName());
-        supplier.setName(supplierRequest.getName());
         supplier.setPhone(supplierRequest.getPhone());
-
+        supplier.setEmail(supplierRequest.getEmail());
         supplier.setStatus(1);
 
+        return supplierRepository.save(supplier);
+    }
+
+    // Sửa mới nhà cung cấp
+    public Supplier updateSupplier(Long id, SupplierRequest supplierRequest) {
+        Supplier supplier = getSupplierById(id).orElseThrow(() -> new RuntimeException("Supplier not found"));
+        // Cập nhật các trường của nhà cung cấp
+        supplier.setCode(supplierRequest.getCode());
+        supplier.setName(supplierRequest.getName());
+        supplier.setPhone(supplierRequest.getPhone());
+        supplier.setEmail(supplierRequest.getEmail());
+
+        return supplierRepository.save(supplier);
+    }
+
+    // Thay đổi trạng thái nhà cung cấp (xóa hoặc khôi phục)
+    public Supplier changeSupplierStatus(Long supplierId, Integer newStatus) {
+        Supplier supplier = supplierRepository.findById(supplierId)
+                .orElseThrow(() -> new RuntimeException("Product not found"));
+        supplier.setStatus(newStatus);
         return supplierRepository.save(supplier);
     }
 

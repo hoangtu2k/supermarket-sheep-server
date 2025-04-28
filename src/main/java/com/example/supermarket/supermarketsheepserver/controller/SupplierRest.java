@@ -35,9 +35,28 @@ public class SupplierRest {
 
     // Tạo mới nhà cung cấp
     @PostMapping
-    public ResponseEntity<Supplier> createProduct(@RequestBody SupplierRequest supplierRequest) {
+    public ResponseEntity<Supplier> createSupplier(@RequestBody SupplierRequest supplierRequest) {
         Supplier savedSupplier = supplierService.createSupplier(supplierRequest);
         return ResponseEntity.ok(savedSupplier);
+    }
+
+    // Cập nhật nhà cung cấp
+    @PutMapping("/{id}")
+    public ResponseEntity<Supplier> updateSupplier(@PathVariable Long id, @RequestBody SupplierRequest supplierRequest) {
+        Optional<Supplier> existingSupplier = supplierService.getSupplierById(id);
+        if (existingSupplier.isPresent()) {
+            Supplier updatedProduct = supplierService.updateSupplier(id, supplierRequest);
+            return ResponseEntity.ok(updatedProduct);
+        } else {
+            return ResponseEntity.notFound().build();
+        }
+    }
+
+    // Thay đổi trạng thái nhà cung cấp
+    @PutMapping("/{id}/status")
+    public ResponseEntity<Supplier> changeSupplierStatus(@PathVariable Long id, @RequestParam Integer status) {
+        Supplier updatedSupplier = supplierService.changeSupplierStatus(id, status);
+        return ResponseEntity.ok(updatedSupplier);
     }
 
 }
