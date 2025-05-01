@@ -1,6 +1,7 @@
 package com.example.supermarket.supermarketsheepserver.controller;
 
 import com.example.supermarket.supermarketsheepserver.entity.EntryForm;
+import com.example.supermarket.supermarketsheepserver.entity.Product;
 import com.example.supermarket.supermarketsheepserver.request.EntryFormRequest;
 import com.example.supermarket.supermarketsheepserver.service.ImportedGoodsService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -9,6 +10,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
+import java.util.Collections;
+import java.util.List;
 
 @RestController
 @RequestMapping("/admin/imported-goods")
@@ -16,6 +19,13 @@ public class ImportedGoodsController {
 
     @Autowired
     private ImportedGoodsService importedGoodsService;
+
+    // Lấy danh sách phếu nhập
+    @GetMapping
+    public ResponseEntity<List<EntryForm>> getAllEntryForms() {
+        List<EntryForm> entryForms = importedGoodsService.getAllEntryForms();
+        return ResponseEntity.ok(entryForms != null ? entryForms : Collections.emptyList());
+    }
 
     @PostMapping("/create-entry-form")
     public ResponseEntity<EntryForm> taoPhieuNhap(

@@ -28,7 +28,6 @@ public class EntryForm {
     private String creator;
     private String updater;
     private String importer;
-
     private Integer status;
 
     @ManyToOne

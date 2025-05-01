@@ -1,7 +1,6 @@
 package com.example.supermarket.supermarketsheepserver.controller;
 
 import com.example.supermarket.supermarketsheepserver.entity.Product;
-import com.example.supermarket.supermarketsheepserver.repository.ProductRepository;
 import com.example.supermarket.supermarketsheepserver.request.ProductRequest;
 import com.example.supermarket.supermarketsheepserver.service.ProductService;
 import org.springframework.beans.factory.annotation.Autowired;

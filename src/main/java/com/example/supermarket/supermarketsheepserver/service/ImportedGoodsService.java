@@ -31,6 +31,11 @@ public class ImportedGoodsService {
     @Autowired
     private ProductTypeRepository productTypeRepository;
 
+    // Lấy tất cả sản phẩm
+    public List<EntryForm> getAllEntryForms() {
+        return entryFormRepository.findAll();
+    }
+
     public EntryForm createEntryForm(Long supplierId, Long userId, String note) {
         EntryForm entryForm = new EntryForm();
         entryForm.setEntry_form_code("PN" + System.currentTimeMillis()); // Tạo mã tự động
