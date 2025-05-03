@@ -4,6 +4,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.math.BigDecimal;
+import java.util.List;
 
 @Setter
 @Getter
@@ -24,5 +25,10 @@ public class ProductRequest {
     private Long productTypename;
     private String supplierName;
     private String categoryName;
+
+    private Boolean mainImage;
+    private List<String> notMainImages; // List of non-main image URLs
+    private Long productId;
+
 
 }

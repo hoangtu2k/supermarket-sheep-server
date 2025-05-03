@@ -19,7 +19,7 @@ public class ProductService {
 
     // Lấy tất cả sản phẩm
     public List<Product> getAllProducts() {
-        return productRepository.findAllProductsOrderedByCreateDate();
+        return productRepository.getAllProducts();
     }
 
     // Lấy sản phẩm theo ID
@@ -43,7 +43,6 @@ public class ProductService {
         product.setDescription(productRequest.getDescription());
         product.setPrice(productRequest.getPrice());
         product.setQuantity(productRequest.getQuantity());
-        product.setImageUrl(productRequest.getImageUrl());
         product.setCreateDate(LocalDateTime.now());
         product.setStatus(1);
 
@@ -60,7 +59,6 @@ public class ProductService {
         product.setWeight(productRequest.getWeight());
         product.setDescription(productRequest.getDescription());
         product.setQuantity(productRequest.getQuantity());
-        product.setImageUrl(productRequest.getImageUrl());
         // Lưu sản phẩm đã cập nhật
         return productRepository.save(product);
     }

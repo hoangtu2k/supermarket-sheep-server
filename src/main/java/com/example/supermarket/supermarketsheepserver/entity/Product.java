@@ -1,5 +1,6 @@
 package com.example.supermarket.supermarketsheepserver.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.Min;
@@ -8,6 +9,8 @@ import lombok.*;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.HashSet;
+import java.util.Set;
 
 @Getter
 @Setter
@@ -34,9 +37,6 @@ public class Product {
 
     private Double weight;
 
-    @Column(name = "image_url")
-    private String imageUrl;
-
     private LocalDateTime createDate;
 
     @Column(nullable = false)
@@ -49,5 +49,10 @@ public class Product {
     @ManyToOne
     @JoinColumn(name = "product_type_id")
     private ProductType productType;
+
+    @JsonIgnore
+    @OneToMany(mappedBy = "product")
+    private Set<ProductPhoto> productPhotos = new HashSet<ProductPhoto>();
+
 
 }
