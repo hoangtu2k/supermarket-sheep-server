@@ -23,8 +23,8 @@ public class ProductService {
     }
 
     // Lấy sản phẩm theo ID
-    public Optional<Product> getProductById(Long id) {
-        return productRepository.findById(id);
+    public Product getProductById(Long id) {
+        return productRepository.getById(id);
     }
 
     // Tạo mới sản phẩm
@@ -51,9 +51,20 @@ public class ProductService {
 
     // Cập nhật sản phẩm
     public Product updateProduct(Long id, ProductRequest productRequest) {
-        Product product = getProductById(id).orElseThrow(() -> new RuntimeException("Product not found"));
-        // Cập nhật các trường của sản phẩm
-        product.setCode(productRequest.getCode());
+        // Kiểm tra xem sản phẩm có tồn tại không
+        Optional<Product> optionalProduct = productRepository.findById(id);
+        if (!optionalProduct.isPresent()) {
+            throw new RuntimeException("Product not found with id: " + id);
+        }
+        Product product = optionalProduct.get();
+        // Cập nhật các thuộc tính sản phẩm
+        if (productRequest.getCode() == null) {
+            String generatedCode = generateUserCode();
+            product.setCode(generatedCode);
+        }
+        else {
+            product.setCode(productRequest.getCode());
+        }
         product.setName(productRequest.getName());
         product.setPrice(productRequest.getPrice());
         product.setWeight(productRequest.getWeight());

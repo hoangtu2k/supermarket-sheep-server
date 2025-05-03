@@ -5,6 +5,7 @@ import com.example.supermarket.supermarketsheepserver.entity.ProductPhoto;
 import com.example.supermarket.supermarketsheepserver.request.ProductRequest;
 import com.example.supermarket.supermarketsheepserver.service.ProductService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -80,10 +81,43 @@ public class ProductRest {
 
     // Lấy 1 sản phẩm theo ID
     @GetMapping("/{id}")
-    public ResponseEntity<Product> getProductById(@PathVariable Long id) {
-        Optional<Product> product = productService.getProductById(id);
-        return product.map(ResponseEntity::ok)
-                .orElseGet(() -> ResponseEntity.notFound().build());
+    public ResponseEntity<ProductRequest> getProductById(@PathVariable Long id) {
+        Product product = productService.getProductById(id);
+        if (product == null) {
+            return ResponseEntity.notFound().build();
+        }
+
+        // Áp dụng Y HỆT cách chuyển đổi từ getAll()
+        ProductRequest productRequest = new ProductRequest();
+        productRequest.setId(product.getId());
+        productRequest.setCode(product.getCode());
+        productRequest.setName(product.getName());
+        productRequest.setPrice(product.getPrice());
+        productRequest.setQuantity(product.getQuantity());
+        productRequest.setDescription(product.getDescription());
+        productRequest.setStatus(product.getStatus());
+
+        // Xử lý ảnh GIỐNG HỆT getAll()
+        if (product.getProductPhotos() != null && !product.getProductPhotos().isEmpty()) {
+            ProductPhoto mainPhoto = product.getProductPhotos().stream()
+                    .filter(ProductPhoto::getMainImage)
+                    .findFirst()
+                    .orElse(null);
+
+            productRequest.setImageUrl(mainPhoto != null ? mainPhoto.getImageUrl() : null);
+
+            productRequest.setNotMainImages(
+                    product.getProductPhotos().stream()
+                            .filter(photo -> !photo.getMainImage())
+                            .map(ProductPhoto::getImageUrl)
+                            .collect(Collectors.toList())
+            );
+        } else {
+            productRequest.setImageUrl(null);
+            productRequest.setNotMainImages(new ArrayList<>());
+        }
+
+        return ResponseEntity.ok(productRequest);
     }
 
     // Tạo mới sản phẩm
@@ -96,12 +130,11 @@ public class ProductRest {
     // Cập nhật sản phẩm
     @PutMapping("/{id}")
     public ResponseEntity<Product> updateProduct(@PathVariable Long id, @RequestBody ProductRequest productRequest) {
-        Optional<Product> existingProduct = productService.getProductById(id);
-        if (existingProduct.isPresent()) {
+        try {
             Product updatedProduct = productService.updateProduct(id, productRequest);
-            return ResponseEntity.ok(updatedProduct);
-        } else {
-            return ResponseEntity.notFound().build();
+            return ResponseEntity.ok(updatedProduct); // Trả về 200 OK và đối tượng sản phẩm đã cập nhật
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null); // Trả về 404 Not Found nếu không tìm thấy sản phẩm
         }
     }
 
