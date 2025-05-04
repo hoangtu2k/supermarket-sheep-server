@@ -39,6 +39,10 @@ public class Product {
     @Temporal(TemporalType.TIMESTAMP)
     private Date createDate;
 
+    @DateTimeFormat(pattern = "yyyy-MM-dd'T'HH:mm")
+    @Temporal(TemporalType.TIMESTAMP)
+    private Date updateDate;
+
     @Column(nullable = false)
     private Integer status = 1; // Default active
 

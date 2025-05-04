@@ -112,17 +112,35 @@ public class ProductService {
                     String description = row.getCell(6) != null ? row.getCell(6).getStringCellValue() : null;
 
                     if (name != null && url != null && price != null && qty != null && weight != null) {
-                        Product product = new Product();
-                        product.setCode(code);
-                        product.setName(name);
-                        product.setPrice(BigDecimal.valueOf(price));
-                        product.setQuantity(qty.intValue());
-                        product.setWeight(weight);
-                        product.setDescription(description);
-                        product.setStatus(1);
-                        product.setCreateDate(new Date());
+                        // Check if product with the same code already exists
+                        Optional<Product> existingProductOpt = productRepository.findFirstByCode(code);
+
+                        Product product;
+                        if (existingProductOpt.isPresent()) {
+                            // Product exists, update quantity
+                            product = existingProductOpt.get();
+                            product.setQuantity(product.getQuantity() + qty.intValue());  // Add new quantity
+                            product.setPrice(BigDecimal.valueOf(price));  // Update price if needed (optional)
+                            product.setWeight(weight);  // Update weight if needed (optional)
+                            product.setDescription(description);  // Update description if needed (optional)
+                            product.setUpdateDate(new Date());  // Set updated date
+                        } else {
+                            // Product does not exist, create new product
+                            product = new Product();
+                            product.setCode(code);
+                            product.setName(name);
+                            product.setPrice(BigDecimal.valueOf(price));
+                            product.setQuantity(qty.intValue());
+                            product.setWeight(weight);
+                            product.setDescription(description);
+                            product.setStatus(1);
+                            product.setCreateDate(new Date());
+                        }
+
+                        // Save the product (whether it's new or updated)
                         productRepository.save(product);
 
+                        // Save product photo
                         ProductPhoto productPhoto = new ProductPhoto();
                         productPhoto.setMainImage(true);
                         productPhoto.setImageUrl(url);
@@ -135,6 +153,8 @@ public class ProductService {
             throw new IOException("Failed to import Excel file: " + e.getMessage());
         }
     }
+
+
 
     // Tạo code ramdom
     private String generateCode() {

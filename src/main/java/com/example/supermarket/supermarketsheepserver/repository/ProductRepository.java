@@ -7,6 +7,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface ProductRepository extends JpaRepository<Product, Long> {
@@ -17,5 +18,9 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
 
     @Query(value = "select u from Product u WHERE u.id = :id")
     Product getById(@Param("id") Long id);
+
+    Optional<Product> findByCode(String code);
+    Optional<Product> findFirstByCode(String code);
+
 
 }
