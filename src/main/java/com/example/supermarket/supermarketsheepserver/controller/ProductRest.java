@@ -8,11 +8,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 @RestController
@@ -28,7 +28,7 @@ public class ProductRest {
         // Retrieve the list of products from the service
         List<Product> products = productService.getAllProducts();
 
-        // Convert the list of Product to ProductReq
+        // Convert the list of Product to ProductRequest
         List<ProductRequest> productRequests = products.stream()
                 .map(product -> {
                     ProductRequest productRequest = new ProductRequest();
@@ -58,7 +58,7 @@ public class ProductRest {
                         // Collect non-main image URLs
                         List<String> notMainImageUrls = product.getProductPhotos().stream()
                                 .filter(photo -> !photo.getMainImage())
-                                .map(ProductPhoto::getImageUrl) // Assuming getImageUrl() exists
+                                .map(ProductPhoto::getImageUrl)
                                 .collect(Collectors.toList());
 
                         productRequest.setNotMainImages(notMainImageUrls);
@@ -72,12 +72,10 @@ public class ProductRest {
                 })
                 .collect(Collectors.toList());
 
-        // Return response based on the presence of productReqs
-        if (productRequests.isEmpty()) {
-            return ResponseEntity.noContent().build(); // Return 204 if no products
-        }
-        return ResponseEntity.ok(productRequests); // Return 200 and the list of products
+        // ✅ Always return 200 OK with an array (even if empty)
+        return ResponseEntity.ok(productRequests);
     }
+
 
     // Lấy 1 sản phẩm theo ID
     @GetMapping("/{id}")
@@ -143,6 +141,16 @@ public class ProductRest {
     public ResponseEntity<Product> changeProductStatus(@PathVariable Long id, @RequestParam Integer status) {
         Product updatedProduct = productService.changeProductStatus(id, status);
         return ResponseEntity.ok(updatedProduct);
+    }
+
+    @PostMapping(value = "/importExel", consumes = "multipart/form-data")
+    public ResponseEntity<String> importExel(@RequestParam("file") MultipartFile file) {
+        try {
+            productService.importExel(file);
+            return ResponseEntity.status(HttpStatus.ACCEPTED).body("ok");
+        } catch (IOException e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error: " + e.getMessage());
+        }
     }
 
 }
