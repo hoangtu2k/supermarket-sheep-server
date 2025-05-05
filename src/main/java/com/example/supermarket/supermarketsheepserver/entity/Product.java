@@ -22,18 +22,14 @@ public class Product {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private String code;
-
     private String name;
 
     @Column(name = "description")
     private String description;
 
-    private BigDecimal price;
+    private Double weight;
 
     private Integer quantity;
-
-    private Double weight;
 
     @DateTimeFormat(pattern = "yyyy-MM-dd'T'HH:mm")
     @Temporal(TemporalType.TIMESTAMP)
@@ -44,7 +40,7 @@ public class Product {
     private Date updateDate;
 
     @Column(nullable = false)
-    private Integer status = 1; // Default active
+    private Integer status;
 
     @ManyToOne
     @JoinColumn(name = "supplier_id")
@@ -57,6 +53,10 @@ public class Product {
     @JsonIgnore
     @OneToMany(mappedBy = "product")
     private Set<ProductPhoto> productPhotos = new HashSet<ProductPhoto>();
+
+    // Mối quan hệ với ProductDetails (chi tiết sản phẩm theo từng đơn vị)
+    @OneToMany(mappedBy = "product")
+    private Set<ProductDetails> productDetails = new HashSet<ProductDetails>();
 
 
 }

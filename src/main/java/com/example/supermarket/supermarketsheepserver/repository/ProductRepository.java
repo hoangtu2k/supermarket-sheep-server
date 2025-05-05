@@ -19,8 +19,11 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
     @Query(value = "select u from Product u WHERE u.id = :id")
     Product getById(@Param("id") Long id);
 
-    Optional<Product> findByCode(String code);
-    Optional<Product> findFirstByCode(String code);
+    @Query("SELECT DISTINCT p FROM Product p " +
+            "LEFT JOIN FETCH p.productPhotos " +
+            "LEFT JOIN FETCH p.productDetails " +
+            "ORDER BY p.createDate DESC")
+    List<Product> findAllWithPhotosAndDetails();
 
 
 }

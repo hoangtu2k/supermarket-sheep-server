@@ -3,31 +3,26 @@ package com.example.supermarket.supermarketsheepserver.request;
 import lombok.Getter;
 import lombok.Setter;
 
-import java.math.BigDecimal;
 import java.util.List;
 
-@Setter
 @Getter
+@Setter
 public class ProductRequest {
-
     private Long id;
-    private String code;
     private String name;
     private String description;
     private Double weight;
-    private BigDecimal price;
     private Integer quantity;
-    private String imageUrl;
     private Integer status;
-    private Long supplierId;
-    private Long categoryId;
-    private Long productTypeId;
-    private Long productTypename;
-    private String supplierName;
-    private String categoryName;
 
+    // Product details
+    private List<ProductDetailsRequest> productDetails;
+
+    // Images
     private Boolean mainImage;
-    private List<String> notMainImages; // List of non-main image URLs
+    private String imageUrl;
+    private List<String> notMainImages;
+
     private Long productId;
 
 
