@@ -2,6 +2,7 @@ package com.example.supermarket.supermarketsheepserver.controller;
 
 import com.example.supermarket.supermarketsheepserver.entity.Product;
 import com.example.supermarket.supermarketsheepserver.entity.ProductPhoto;
+import com.example.supermarket.supermarketsheepserver.request.ProductDetailsRequest;
 import com.example.supermarket.supermarketsheepserver.request.ProductRequest;
 import com.example.supermarket.supermarketsheepserver.service.ProductService;
 import jakarta.transaction.Transactional;
@@ -64,6 +65,24 @@ public class ProductRest {
                         productRequest.setMainImage(false);
                         productRequest.setImageUrl(null);
                         productRequest.setNotMainImages(new ArrayList<>());
+                    }
+
+                    // Add product details information
+                    if (product.getProductDetails() != null && !product.getProductDetails().isEmpty()) {
+                        List<ProductDetailsRequest> detailRequests = product.getProductDetails().stream()
+                                .map(detail -> {
+                                    ProductDetailsRequest detailRequest = new ProductDetailsRequest();
+                                    detailRequest.setId(detail.getId());
+                                    detailRequest.setCode(detail.getCode());
+                                    detailRequest.setUnit(detail.getUnit());
+                                    detailRequest.setConversionRate(detail.getConversionRate());
+                                    detailRequest.setPrice(detail.getPrice());
+                                    return detailRequest;
+                                })
+                                .collect(Collectors.toList());
+                        productRequest.setProductDetails(detailRequests);
+                    } else {
+                        productRequest.setProductDetails(new ArrayList<>());
                     }
 
                     return productRequest;
