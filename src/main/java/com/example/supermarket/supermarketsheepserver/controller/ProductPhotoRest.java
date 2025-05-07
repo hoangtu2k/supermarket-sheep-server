@@ -1,6 +1,5 @@
 package com.example.supermarket.supermarketsheepserver.controller;
 
-
 import com.example.supermarket.supermarketsheepserver.request.ProductRequest;
 import com.example.supermarket.supermarketsheepserver.service.ProductPhotoService;
 import org.springframework.beans.factory.annotation.Autowired;

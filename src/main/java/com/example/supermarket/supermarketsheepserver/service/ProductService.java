@@ -30,6 +30,11 @@ public class ProductService {
         return productRepository.findAllWithPhotosAndDetails(); // Custom query to fetch all needed data
     }
 
+    public Product getProductById(Long id) {
+        return productRepository.getById(id);
+    }
+
+
     // Thêm sản phẩm
     public Product createProduct(ProductRequest productRequest) {
         // Validate required fields
