@@ -111,6 +111,7 @@ public class UserService {
                 .dateOfBirth(user.getDateOfBirth() != null ? user.getDateOfBirth().toString() : null)
                 .status(user.getStatus().name())
                 .roleId(user.getRole().getId())
+                .roleName(user.getRole().getName())
                 .build();
     }
 
