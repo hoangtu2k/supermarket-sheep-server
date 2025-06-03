@@ -1,6 +1,9 @@
 package com.example.supermarket.supermarketsheepserver.auth;
 
+import com.example.supermarket.supermarketsheepserver.bean.JwtTokenUtil;
 import com.example.supermarket.supermarketsheepserver.entity.User;
+import com.example.supermarket.supermarketsheepserver.entity.User.UserStatus;
+import com.example.supermarket.supermarketsheepserver.request.LoginRequest;
 import com.example.supermarket.supermarketsheepserver.service.UserService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -48,7 +51,7 @@ public class AuthUser {
         if (!passwordEncoder.matches(loginRequest.getPassword(), user.getPassword())) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Sai mat khau!");
         }
-        if(user.getStatus() != 1){
+        if(user.getStatus() != UserStatus.ACTIVE){
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Tai khoan khong kha dung!");
         }
 

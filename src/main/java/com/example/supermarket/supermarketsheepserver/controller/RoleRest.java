@@ -1,28 +1,45 @@
 package com.example.supermarket.supermarketsheepserver.controller;
 
 import com.example.supermarket.supermarketsheepserver.entity.Role;
+import com.example.supermarket.supermarketsheepserver.request.RoleRequest;
 import com.example.supermarket.supermarketsheepserver.service.RoleService;
-import org.springframework.beans.factory.annotation.Autowired;
+import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
-import java.util.Collections;
 import java.util.List;
 
 @RestController
 @RequestMapping("/admin/role")
+@RequiredArgsConstructor
 public class RoleRest {
 
-    @Autowired
-    private RoleService roleService;
+    private final RoleService roleService;
 
-    // Lấy danh sách vị trí
     @GetMapping
     public ResponseEntity<List<Role>> getAllRoles() {
-        List<Role> roles = roleService.getAllRoles();
-        return ResponseEntity.ok(roles != null ? roles : Collections.emptyList());
+        return ResponseEntity.ok(roleService.getAllRoles());
     }
 
+    @GetMapping("/{id}")
+    public ResponseEntity<Role> getRoleById(@PathVariable Long id) {
+        return ResponseEntity.ok(roleService.getRoleById(id));
+    }
+
+    @PostMapping
+    public ResponseEntity<Role> createRole(@Valid @RequestBody RoleRequest request) {
+        return new ResponseEntity<>(roleService.createRole(request), HttpStatus.CREATED);
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<Role> updateRole(@PathVariable Long id, @Valid @RequestBody RoleRequest request) {
+        return ResponseEntity.ok(roleService.updateRole(id, request));
+    }
+
+    @PutMapping("/{id}/status")
+    public ResponseEntity<Role> changeRoleStatus(@PathVariable Long id, @RequestParam String status) {
+        return ResponseEntity.ok(roleService.changeRoleStatus(id, status));
+    }
 }

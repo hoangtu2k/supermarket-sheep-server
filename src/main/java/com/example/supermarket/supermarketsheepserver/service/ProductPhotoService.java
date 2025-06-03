@@ -4,72 +4,53 @@ import com.example.supermarket.supermarketsheepserver.entity.Product;
 import com.example.supermarket.supermarketsheepserver.entity.ProductPhoto;
 import com.example.supermarket.supermarketsheepserver.repository.ProductPhotoRepository;
 import com.example.supermarket.supermarketsheepserver.repository.ProductRepository;
-import com.example.supermarket.supermarketsheepserver.request.ProductRequest;
-import org.springframework.beans.factory.annotation.Autowired;
+import com.example.supermarket.supermarketsheepserver.request.ProductPhotoRequest;
+import jakarta.persistence.EntityNotFoundException;
+import jakarta.transaction.Transactional;
+import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 
-
 @Service
+@RequiredArgsConstructor
 public class ProductPhotoService {
 
-    @Autowired
-    private ProductPhotoRepository productPhotoRepository;
+    private final ProductPhotoRepository productPhotoRepository;
+    private final ProductRepository productRepository;
 
-    private ProductRepository productRepository;
-
-    public List<ProductPhoto> getAllProductPhoto() {
-        return productPhotoRepository.getAllProductPhoto();
+    public List<ProductPhoto> getAllProductPhotos() {
+        return productPhotoRepository.findAll();
     }
 
     public ProductPhoto getProductPhotoById(Long id) {
-        // Kiểm tra xem productPhoto có tồn tại không
-        ProductPhoto productPhoto = productPhotoRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Product not found"));
-        return productPhotoRepository.getById(id);
+        return productPhotoRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Product photo not found with id: " + id));
     }
 
-    public ProductPhoto createProductPhoto(ProductRequest image) {
-        // Kiểm tra xem sản phẩm đã có ảnh chính (main image) hay chưa
-        if (image.getMainImage()) {
-            // Kiểm tra xem đã có ảnh chính nào tồn tại trong cơ sở dữ liệu chưa
-            boolean hasMainImage = productPhotoRepository.existsByProductIdAndMainImageTrue(image.getProductId());
+    @Transactional
+    public ProductPhoto createProductPhoto(@Valid ProductPhotoRequest request) {
+        Product product = productRepository.findById(request.getProductId())
+                .orElseThrow(() -> new EntityNotFoundException("Product not found with id: " + request.getProductId()));
 
-            if (hasMainImage) {
-                List<ProductPhoto> list = productPhotoRepository.getAllByIdSP(image.getProductId());
-                for(ProductPhoto p : list){
-                    productPhotoRepository.delete(p);
-                    System.out.println("Xóa mainImage");
-                }
-            }
-
-            if (!hasMainImage) {
-                List<ProductPhoto> list = productPhotoRepository.getAllByIdSP1(image.getProductId());
-                for(ProductPhoto p : list){
-                    productPhotoRepository.delete(p);
-                    System.out.println("Xóa mainImage phụ");
-                }
-            }
-
+        if (request.getMainImage()) {
+            productPhotoRepository.deleteByProductAndMainImage(product, true);
         }
 
-        // Tạo đối tượng ProductPhoto mới
-        ProductPhoto productImage = new ProductPhoto();
-        productImage.setImageUrl(image.getImageUrl());
-        productImage.setMainImage(image.getMainImage());
-        productImage.setProduct(Product.builder().id(image.getProductId()).build());
+        ProductPhoto productPhoto = ProductPhoto.builder()
+                .imageUrl(request.getImageUrl())
+                .mainImage(request.getMainImage())
+                .product(product)
+                .build();
 
-        // Lưu vào cơ sở dữ liệu
-        return productPhotoRepository.save(productImage);
+        return productPhotoRepository.save(productPhoto);
     }
 
-    public void deleteImg(Long IdProduct){
-        List<ProductPhoto> list = productPhotoRepository.getAllByIdSP(IdProduct);
-        for(ProductPhoto p : list){
-            productPhotoRepository.delete(p);
-        }
+    @Transactional
+    public void deleteProductPhoto(Long id) {
+        ProductPhoto photo = productPhotoRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Product photo not found with id: " + id));
+        productPhotoRepository.delete(photo);
     }
-
-
 }

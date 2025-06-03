@@ -1,9 +1,8 @@
-package com.example.supermarket.supermarketsheepserver.auth;
+package com.example.supermarket.supermarketsheepserver.bean;
 
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import org.springframework.stereotype.Component;
-import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
 
 

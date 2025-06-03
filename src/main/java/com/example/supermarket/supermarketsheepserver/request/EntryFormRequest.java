@@ -1,21 +1,37 @@
 package com.example.supermarket.supermarketsheepserver.request;
 
-import lombok.Getter;
-import lombok.Setter;
+import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotNull;
+import lombok.Builder;
+import lombok.Data;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 
-@Setter
-@Getter
+/**
+ * DTO for entry form-related requests, mapping to EntryForm entity.
+ */
+@Data
+@Builder
 public class EntryFormRequest {
 
     private Long entryFormId;
-    private LocalDateTime entryDate;
-    private String username;
-    private String supplierName;
-    private BigDecimal total;
-    private List<EntryDetailsRequest> entryDetaisRequests;
 
+    @NotNull(message = "Entry date is required")
+    private LocalDateTime entryDate;
+
+    @NotNull(message = "Username is required")
+    private String username;
+
+    @NotNull(message = "Supplier name is required")
+    private String supplierName;
+
+    @NotNull(message = "Total is required")
+    private BigDecimal total;
+
+    @NotEmpty(message = "Entry details cannot be empty")
+    private List<EntryDetailsRequest> entryDetailsRequests;
+
+    private String status; // Maps to EntryFormStatus enum (e.g., PENDING, COMPLETED, CANCELED)
 }

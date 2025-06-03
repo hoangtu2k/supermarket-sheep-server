@@ -1,4 +1,4 @@
-package com.example.supermarket.supermarketsheepserver.auth;
+package com.example.supermarket.supermarketsheepserver.request;
 
 import lombok.Getter;
 import lombok.Setter;

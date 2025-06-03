@@ -1,74 +1,97 @@
 package com.example.supermarket.supermarketsheepserver.service;
 
 import com.example.supermarket.supermarketsheepserver.entity.Supplier;
+import com.example.supermarket.supermarketsheepserver.entity.Supplier.SupplierStatus;
 import com.example.supermarket.supermarketsheepserver.repository.SupplierRepository;
 import com.example.supermarket.supermarketsheepserver.request.SupplierRequest;
-import org.springframework.beans.factory.annotation.Autowired;
+import jakarta.transaction.Transactional;
+import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
-import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Service
+@RequiredArgsConstructor
 public class SupplierService {
 
-    @Autowired
-    private SupplierRepository supplierRepository;
+    private final SupplierRepository supplierRepository;
 
-    // Lấy tất cả nhà cung cấp
     public List<Supplier> getAllSuppliers() {
-        return supplierRepository.findAll();
+        return supplierRepository.findByStatusOrderByCreatedAtDesc(Supplier.SupplierStatus.ACTIVE);
     }
 
-    // Lấy nhà cung cấp theo ID
+    public List<SupplierRequest> getAllSuppliersAsDto() {
+        List<Supplier> suppliers = supplierRepository.findByStatusOrderByCreatedAtDesc(SupplierStatus.ACTIVE);
+        return suppliers.stream().map(this::mapToSupplierRequest).collect(Collectors.toList());
+    }
+
+    public SupplierRequest getSupplierByIdAsDto(Long id) {
+        Supplier supplier = supplierRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Supplier not found with id: " + id));
+        return mapToSupplierRequest(supplier);
+    }
+
     public Optional<Supplier> getSupplierById(Long id) {
         return supplierRepository.findById(id);
     }
 
-    // Tạo mới nhà cung cấp
-    public Supplier createSupplier(SupplierRequest supplierRequest) {
-        Supplier supplier = new Supplier();
-        if (supplierRequest.getCode() == null) {
-            // Generate a new code automatically if it's null
-            String generatedCode = generateUserCode();
-            supplier.setCode(generatedCode);
-        } else {
-            // Otherwise, set the code from the request
-            supplier.setCode(supplierRequest.getCode());
+    @Transactional
+    public Supplier createSupplier(@Valid SupplierRequest request) {
+        if (supplierRepository.existsByCode(request.getCode())) {
+            throw new IllegalArgumentException("Supplier code already exists!");
         }
-        supplier.setName(supplierRequest.getName());
-        supplier.setPhone(supplierRequest.getPhone());
-        supplier.setEmail(supplierRequest.getEmail());
-        supplier.setStatus(1);
+
+        Supplier supplier = Supplier.builder()
+                .code(request.getCode())
+                .name(request.getName())
+                .phone(request.getPhone())
+                .email(request.getEmail())
+                .address(request.getAddress())
+                .status(SupplierStatus.ACTIVE)
+                .build();
 
         return supplierRepository.save(supplier);
     }
 
-    // Sửa mới nhà cung cấp
-    public Supplier updateSupplier(Long id, SupplierRequest supplierRequest) {
-        Supplier supplier = getSupplierById(id).orElseThrow(() -> new RuntimeException("Supplier not found"));
-        // Cập nhật các trường của nhà cung cấp
-        supplier.setCode(supplierRequest.getCode());
-        supplier.setName(supplierRequest.getName());
-        supplier.setPhone(supplierRequest.getPhone());
-        supplier.setEmail(supplierRequest.getEmail());
+    @Transactional
+    public Supplier updateSupplier(Long id, @Valid SupplierRequest request) {
+        Supplier supplier = supplierRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Supplier not found with id: " + id));
+
+        if (!supplier.getCode().equals(request.getCode()) && supplierRepository.existsByCode(request.getCode())) {
+            throw new IllegalArgumentException("Supplier code already exists!");
+        }
+
+        supplier.setCode(request.getCode());
+        supplier.setName(request.getName());
+        supplier.setPhone(request.getPhone());
+        supplier.setEmail(request.getEmail());
+        supplier.setAddress(request.getAddress());
+        supplier.setStatus(SupplierStatus.valueOf(request.getStatus()));
 
         return supplierRepository.save(supplier);
     }
 
-    // Thay đổi trạng thái nhà cung cấp (xóa hoặc khôi phục)
-    public Supplier changeSupplierStatus(Long supplierId, Integer newStatus) {
+    @Transactional
+    public Supplier changeSupplierStatus(Long supplierId, String status) {
         Supplier supplier = supplierRepository.findById(supplierId)
-                .orElseThrow(() -> new RuntimeException("Product not found"));
-        supplier.setStatus(newStatus);
+                .orElseThrow(() -> new RuntimeException("Supplier not found with id: " + supplierId));
+        supplier.setStatus(SupplierStatus.valueOf(status));
         return supplierRepository.save(supplier);
     }
 
-    // Tạo code ramdom
-    private String generateUserCode() {
-        return UUID.randomUUID().toString();
+    private SupplierRequest mapToSupplierRequest(Supplier supplier) {
+        return SupplierRequest.builder()
+                .id(supplier.getId())
+                .code(supplier.getCode())
+                .name(supplier.getName())
+                .phone(supplier.getPhone())
+                .email(supplier.getEmail())
+                .address(supplier.getAddress())
+                .status(supplier.getStatus().name())
+                .build();
     }
-
 }

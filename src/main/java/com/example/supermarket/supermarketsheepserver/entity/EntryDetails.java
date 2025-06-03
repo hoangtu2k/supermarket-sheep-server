@@ -1,34 +1,63 @@
 package com.example.supermarket.supermarketsheepserver.entity;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotNull;
 import lombok.*;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.LastModifiedDate;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 
-@Getter
-@Setter
+@Data
+@Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
 @Entity
 public class EntryDetails {
 
-    @EmbeddedId
-    private EntryDetailsId id;
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
 
     @ManyToOne
-    @MapsId("entryForm")
-    @JoinColumn(name = "entryform_id")
-    private EntryForm entryform;
+    @JoinColumn(name = "entry_form_id", nullable = false)
+    @NotNull
+    private EntryForm entryForm;
 
     @ManyToOne
-    @MapsId("product")
-    @JoinColumn(name = "product_id")
+    @JoinColumn(name = "product_id", nullable = false)
+    @NotNull
     private Product product;
 
-    private int quantity;
-    private BigDecimal import_price;
-    private BigDecimal discount_price;
+    @NotNull
+    @Column(nullable = false)
+    @Min(1)
+    private Integer quantity;
+
+    @NotNull
+    @Column(nullable = false)
+    private BigDecimal importPrice;
+
+    @NotNull
+    @Column(nullable = false)
     private BigDecimal payment;
 
+    @CreatedDate
+    @Column(updatable = false)
+    private LocalDateTime createdAt;
+
+    @LastModifiedDate
+    private LocalDateTime updatedAt;
+
+    @PrePersist
+    protected void onCreate() {
+        this.createdAt = LocalDateTime.now();
+    }
+
+    @PreUpdate
+    protected void onUpdate() {
+        this.updatedAt = LocalDateTime.now();
+    }
 }

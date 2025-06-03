@@ -3,60 +3,82 @@ package com.example.supermarket.supermarketsheepserver.controller;
 import com.example.supermarket.supermarketsheepserver.entity.Supplier;
 import com.example.supermarket.supermarketsheepserver.request.SupplierRequest;
 import com.example.supermarket.supermarketsheepserver.service.SupplierService;
-import org.springframework.beans.factory.annotation.Autowired;
+import jakarta.persistence.EntityNotFoundException;
+import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.Collections;
 import java.util.List;
-import java.util.Optional;
+import java.util.stream.Collectors;
 
 @RestController
-@RequestMapping("/admin/supplier")
+@RequestMapping("/admin/suppliers")
+@RequiredArgsConstructor
 public class SupplierRest {
 
-    @Autowired
-    private SupplierService supplierService;
+    private final SupplierService supplierService;
 
-    // Lấy danh sách nhà cung cấp
     @GetMapping
-    public ResponseEntity<List<Supplier>> getAllSuppliers() {
+    public ResponseEntity<List<SupplierRequest>> getAllSuppliers() {
         List<Supplier> suppliers = supplierService.getAllSuppliers();
-        return ResponseEntity.ok(suppliers != null ? suppliers : Collections.emptyList());
+        List<SupplierRequest> supplierRequests = suppliers.stream()
+                .map(this::mapToSupplierRequest)
+                .collect(Collectors.toList());
+        return ResponseEntity.ok(supplierRequests);
     }
 
-    // Lấy 1 nhà cung cấp theo ID
     @GetMapping("/{id}")
-    public ResponseEntity<Supplier> getSupplierById(@PathVariable Long id) {
-        Optional<Supplier> supplier = supplierService.getSupplierById(id);
-        return supplier.map(ResponseEntity::ok)
+    public ResponseEntity<SupplierRequest> getSupplierById(@PathVariable Long id) {
+        return supplierService.getSupplierById(id)
+                .map(supplier -> ResponseEntity.ok(mapToSupplierRequest(supplier)))
                 .orElseGet(() -> ResponseEntity.notFound().build());
     }
 
-    // Tạo mới nhà cung cấp
     @PostMapping
-    public ResponseEntity<Supplier> createSupplier(@RequestBody SupplierRequest supplierRequest) {
-        Supplier savedSupplier = supplierService.createSupplier(supplierRequest);
-        return ResponseEntity.ok(savedSupplier);
-    }
-
-    // Cập nhật nhà cung cấp
-    @PutMapping("/{id}")
-    public ResponseEntity<Supplier> updateSupplier(@PathVariable Long id, @RequestBody SupplierRequest supplierRequest) {
-        Optional<Supplier> existingSupplier = supplierService.getSupplierById(id);
-        if (existingSupplier.isPresent()) {
-            Supplier updatedProduct = supplierService.updateSupplier(id, supplierRequest);
-            return ResponseEntity.ok(updatedProduct);
-        } else {
-            return ResponseEntity.notFound().build();
+    public ResponseEntity<?> createSupplier(@Valid @RequestBody SupplierRequest request) {
+        try {
+            Supplier savedSupplier = supplierService.createSupplier(request);
+            return ResponseEntity.status(HttpStatus.CREATED).body(mapToSupplierRequest(savedSupplier));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
 
-    // Thay đổi trạng thái nhà cung cấp
-    @PutMapping("/{id}/status")
-    public ResponseEntity<Supplier> changeSupplierStatus(@PathVariable Long id, @RequestParam Integer status) {
-        Supplier updatedSupplier = supplierService.changeSupplierStatus(id, status);
-        return ResponseEntity.ok(updatedSupplier);
+    @PutMapping("/{id}")
+    public ResponseEntity<?> updateSupplier(@PathVariable Long id, @Valid @RequestBody SupplierRequest request) {
+        try {
+            Supplier updatedSupplier = supplierService.updateSupplier(id, request);
+            return ResponseEntity.ok(mapToSupplierRequest(updatedSupplier));
+        } catch (EntityNotFoundException e) {
+            return ResponseEntity.notFound().build();
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
     }
 
+    @PutMapping("/{id}/status")
+    public ResponseEntity<?> changeSupplierStatus(@PathVariable Long id, @RequestParam String status) {
+        try {
+            Supplier updatedSupplier = supplierService.changeSupplierStatus(id, status);
+            return ResponseEntity.ok(mapToSupplierRequest(updatedSupplier));
+        } catch (EntityNotFoundException e) {
+            return ResponseEntity.notFound().build();
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
+    private SupplierRequest mapToSupplierRequest(Supplier supplier) {
+        return SupplierRequest.builder()
+                .id(supplier.getId())
+                .code(supplier.getCode())
+                .name(supplier.getName())
+                .phone(supplier.getPhone())
+                .email(supplier.getEmail())
+                .address(supplier.getAddress())
+                .status(supplier.getStatus().name())
+                .build();
+    }
 }

@@ -1,27 +1,27 @@
 package com.example.supermarket.supermarketsheepserver.controller;
 
-import com.example.supermarket.supermarketsheepserver.request.ProductRequest;
+import com.example.supermarket.supermarketsheepserver.request.ProductPhotoRequest;
 import com.example.supermarket.supermarketsheepserver.service.ProductPhotoService;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
+import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/admin/product/image")
+@RequiredArgsConstructor
 public class ProductPhotoRest {
 
-    @Autowired
-    private ProductPhotoService service;
+    private final ProductPhotoService productPhotoService;
 
     @PostMapping
-    public ResponseEntity<?> add(@RequestBody ProductRequest image) {
-        return ResponseEntity.ok(service.createProductPhoto(image));
+    public ResponseEntity<?> add(@Valid @RequestBody ProductPhotoRequest request) {
+        return ResponseEntity.status(201).body(productPhotoService.createProductPhoto(request));
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<?> delete(@PathVariable("id") Long id) {
-        service.deleteImg(id);
-        return ResponseEntity.ok(HttpStatus.OK);
+    public ResponseEntity<?> delete(@PathVariable Long id) {
+        productPhotoService.deleteProductPhoto(id);
+        return ResponseEntity.noContent().build();
     }
 }
