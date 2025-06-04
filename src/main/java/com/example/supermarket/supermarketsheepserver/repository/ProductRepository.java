@@ -11,7 +11,7 @@ import java.util.List;
 @Repository
 public interface ProductRepository extends JpaRepository<Product, Long> {
 
-    @Query("SELECT p FROM Product p WHERE p.status = :status ORDER BY p.createDate DESC")
+    @Query("SELECT DISTINCT p FROM Product p LEFT JOIN FETCH p.productDetails pd WHERE p.status = :status ORDER BY p.createDate DESC")
     List<Product> findByStatus(ProductStatus status);
 
 }

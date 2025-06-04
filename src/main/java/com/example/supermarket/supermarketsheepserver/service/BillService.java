@@ -2,9 +2,11 @@ package com.example.supermarket.supermarketsheepserver.service;
 
 import com.example.supermarket.supermarketsheepserver.entity.Bill;
 import com.example.supermarket.supermarketsheepserver.entity.BillDetails;
+import com.example.supermarket.supermarketsheepserver.entity.Customer;
 import com.example.supermarket.supermarketsheepserver.entity.Product;
 import com.example.supermarket.supermarketsheepserver.entity.ProductDetails;
 import com.example.supermarket.supermarketsheepserver.repository.BillRepository;
+import com.example.supermarket.supermarketsheepserver.repository.CustomerRepository;
 import com.example.supermarket.supermarketsheepserver.repository.ProductDetailsRepository;
 import com.example.supermarket.supermarketsheepserver.repository.ProductRepository;
 import com.example.supermarket.supermarketsheepserver.request.BillItemRequest;
@@ -25,7 +27,7 @@ public class BillService {
     private final BillRepository billRepository;
     private final ProductRepository productRepository;
     private final ProductDetailsRepository productDetailsRepository;
-
+    private final CustomerRepository customerRepository;
 
     @Transactional
     public BillResponse createBill(BillRequest request) {
@@ -38,9 +40,14 @@ public class BillService {
                 .createdAt(request.createdAt())
                 .status(status)
                 .totalAmount(new BigDecimal(request.totalAmount().doubleValue()))
-                .customerName(request.customerName())
-                .customerEmail(request.customerEmail())
                 .build();
+
+        // Set customer if customerId is provided
+        if (request.customerId() != null) {
+            Customer customer = customerRepository.findById(request.customerId())
+                    .orElseThrow(() -> new IllegalArgumentException("Customer not found: " + request.customerId()));
+            bill.setCustomer(customer);
+        }
 
         // Process items and update product quantities
         List<BillDetails> billDetails = new ArrayList<>();

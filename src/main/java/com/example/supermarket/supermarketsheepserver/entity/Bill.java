@@ -43,9 +43,9 @@ public class Bill {
     @OneToMany(mappedBy = "bill", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<BillDetails> billDetails;
 
-    private String customerName;
-
-    private String customerEmail;
+    @ManyToOne
+    @JoinColumn(name = "customer_id")
+    private Customer customer;
 
     public void calculateTotalAmount() {
         this.totalAmount = billDetails.stream()

@@ -9,8 +9,6 @@ public record BillRequest(
         LocalDateTime createdAt,
         String status,
         BigDecimal totalAmount,
-        String customerName,
-        String customerEmail,
         Long customerId,
         List<BillItemRequest> items
 ) {}

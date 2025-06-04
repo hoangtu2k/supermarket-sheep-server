@@ -20,4 +20,5 @@ public class BillRest {
     public BillResponse createBill(@Valid @RequestBody BillRequest request) {
         return billService.createBill(request);
     }
+
 }
