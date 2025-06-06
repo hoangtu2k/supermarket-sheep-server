@@ -3,10 +3,12 @@ package com.example.supermarket.supermarketsheepserver.service;
 import com.example.supermarket.supermarketsheepserver.entity.Product;
 import com.example.supermarket.supermarketsheepserver.entity.ProductDetails;
 import com.example.supermarket.supermarketsheepserver.entity.ProductPhoto;
+import com.example.supermarket.supermarketsheepserver.entity.Unit;
 import com.example.supermarket.supermarketsheepserver.entity.Product.ProductStatus;
 import com.example.supermarket.supermarketsheepserver.repository.ProductDetailsRepository;
 import com.example.supermarket.supermarketsheepserver.repository.ProductPhotoRepository;
 import com.example.supermarket.supermarketsheepserver.repository.ProductRepository;
+import com.example.supermarket.supermarketsheepserver.repository.UnitRepository;
 import com.example.supermarket.supermarketsheepserver.request.ProductDetailsRequest;
 import com.example.supermarket.supermarketsheepserver.request.ProductRequest;
 import jakarta.persistence.EntityNotFoundException;
@@ -28,11 +30,11 @@ public class ProductService {
     private final ProductRepository productRepository;
     private final ProductDetailsRepository productDetailsRepository;
     private final ProductPhotoRepository productPhotoRepository;
+    private final UnitRepository unitRepository; // Thêm repository cho Unit
 
     public List<ProductRequest> getAllProductsAsDto() {
         List<Product> products = productRepository.findByStatus(ProductStatus.ACTIVE);
         return products.stream().map(product -> {
-            // Explicitly load photos and details if needed
             product.getProductPhotos().size(); // Trigger lazy loading
             product.getProductDetails().size(); // Trigger lazy loading
             return mapToProductRequest(product);
@@ -84,13 +86,17 @@ public class ProductService {
 
     private void saveProductDetails(List<ProductDetailsRequest> detailsRequests, Product product) {
         List<ProductDetails> details = detailsRequests.stream()
-                .map(detailReq -> ProductDetails.builder()
-                        .product(product)
-                        .code(detailReq.getCode() != null ? detailReq.getCode() : generateDetailCode(product))
-                        .unit(detailReq.getUnit() != null ? ProductDetails.Unit.valueOf(detailReq.getUnit()) : ProductDetails.Unit.CAN)
-                        .conversionRate(detailReq.getConversionRate() != null ? detailReq.getConversionRate() : 1)
-                        .price(detailReq.getPrice() != null ? detailReq.getPrice() : BigDecimal.ZERO)
-                        .build())
+                .map(detailReq -> {
+                    Unit unit = unitRepository.findById(detailReq.getUnitId())
+                            .orElseThrow(() -> new EntityNotFoundException("Unit not found with id: " + detailReq.getUnitId()));
+                    return ProductDetails.builder()
+                            .product(product)
+                            .code(detailReq.getCode() != null ? detailReq.getCode() : generateDetailCode(product))
+                            .unit(unit)
+                            .conversionRate(detailReq.getConversionRate() != null ? detailReq.getConversionRate() : 1)
+                            .price(detailReq.getPrice() != null ? detailReq.getPrice() : BigDecimal.ZERO)
+                            .build();
+                })
                 .collect(Collectors.toList());
 
         productDetailsRepository.saveAll(details);
@@ -168,8 +174,9 @@ public class ProductService {
                         .code(detailReq.getCode() != null ? detailReq.getCode() : generateDetailCode(product))
                         .build();
             }
-            // Updated setUnit logic
-            detail.setUnit(detailReq.getUnit() != null ? ProductDetails.Unit.valueOf(detailReq.getUnit().toUpperCase()) : ProductDetails.Unit.CAN);
+            Unit unit = unitRepository.findById(detailReq.getUnitId())
+                    .orElseThrow(() -> new EntityNotFoundException("Unit not found with id: " + detailReq.getUnitId()));
+            detail.setUnit(unit);
             detail.setConversionRate(detailReq.getConversionRate() != null ? detailReq.getConversionRate() : 1);
             detail.setPrice(detailReq.getPrice() != null ? detailReq.getPrice() : BigDecimal.ZERO);
             updatedDetails.add(detail);
@@ -177,7 +184,6 @@ public class ProductService {
 
         productDetailsRepository.saveAll(updatedDetails);
     }
-
 
     private void updateProductPhotos(Product product, ProductRequest request) {
         if (request.getMainImage() == null && request.getNotMainImages() == null) {
@@ -258,7 +264,7 @@ public class ProductService {
                     .map(detail -> ProductDetailsRequest.builder()
                             .id(detail.getId())
                             .code(detail.getCode())
-                            .unit(detail.getUnit().name())
+                            .unitId(detail.getUnit().getId()) // Sử dụng unitId thay vì unit name
                             .conversionRate(detail.getConversionRate())
                             .price(detail.getPrice())
                             .build())

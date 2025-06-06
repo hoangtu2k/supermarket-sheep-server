@@ -7,5 +7,5 @@ public record BillItemRequest(
         Integer quantity,
         BigDecimal unitPrice,
         BigDecimal subtotal,
-        String unit
+        Long unitId
 ) {}

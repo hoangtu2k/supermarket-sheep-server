@@ -12,10 +12,9 @@ import java.math.BigDecimal;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
-@EqualsAndHashCode(exclude = {"product"}) // Exclude bidirectional field
-@ToString(exclude = {"product"}) // Prevent toString recursion
+@EqualsAndHashCode(exclude = {"product"})
+@ToString(exclude = {"product"})
 public class ProductDetails {
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -24,14 +23,10 @@ public class ProductDetails {
     @Column(nullable = false, unique = true)
     private String code;
 
-    public enum Unit {
-        CAN, PACK, CASE
-    }
-
-    @Enumerated(EnumType.STRING)
+    @ManyToOne
+    @JoinColumn(name = "unit_id")
     @NotNull
-    @Column(nullable = false, columnDefinition = "ENUM('CAN', 'PACK', 'CASE') DEFAULT 'CAN'")
-    private Unit unit = Unit.CAN; // Default to CAN
+    private Unit unit;
 
     @NotNull
     @Column(nullable = false)

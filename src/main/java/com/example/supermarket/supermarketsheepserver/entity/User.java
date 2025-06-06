@@ -31,17 +31,14 @@ public class User {
     @NotNull
     private String name;
 
-    @NotNull
     @Column(nullable = false, unique = true)
     private String username;
 
-    @NotNull
     @Column(nullable = false)
     private String password;
 
     private String phone;
 
-    @NotNull
     @Column(nullable = false, unique = true)
     private String email;
 

@@ -52,16 +52,15 @@ public class BillService {
         // Process items and update product quantities
         List<BillDetails> billDetails = new ArrayList<>();
         for (BillItemRequest item : request.items()) {
-            // Find product
-            Product product = productRepository.findById(item.productId())
-                    .orElseThrow(() -> new IllegalArgumentException("Product not found: " + item.productId()));
-
-            // Find product details for the unit
-            ProductDetails productDetails = productDetailsRepository.findByProductIdAndUnit(
-                    item.productId(), ProductDetails.Unit.valueOf(item.unit())
+            // Find product details by productId and unitId
+            ProductDetails productDetails = productDetailsRepository.findByProductIdAndUnitId(
+                    item.productId(), item.unitId()
             ).orElseThrow(() -> new IllegalArgumentException(
-                    "Product details not found for product " + item.productId() + " and unit " + item.unit()
+                    "Product details not found for productId " + item.productId() + " and unitId " + item.unitId()
             ));
+
+            // Get the associated product
+            Product product = productDetails.getProduct();
 
             // Calculate quantity to deduct based on conversionRate
             int quantityToDeduct = item.quantity() * productDetails.getConversionRate();
@@ -81,10 +80,10 @@ public class BillService {
             // Create BillDetails
             BillDetails details = BillDetails.builder()
                     .bill(bill)
-                    .product(product)
+                    .productDetails(productDetails) // Sử dụng productDetails thay vì product
                     .quantity(item.quantity())
-                    .unitPrice(new BigDecimal(item.unitPrice().doubleValue()))
-                    .subtotal(new BigDecimal(item.subtotal().doubleValue()))
+                    .unitPrice(item.unitPrice()) // Lấy từ request hoặc có thể lấy từ productDetails.getPrice()
+                    .subtotal(item.subtotal())   // Lấy từ request hoặc tính toán
                     .build();
             billDetails.add(details);
         }

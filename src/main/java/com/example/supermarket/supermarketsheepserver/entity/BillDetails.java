@@ -1,9 +1,11 @@
+// BillDetails.java
 package com.example.supermarket.supermarketsheepserver.entity;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
+
 import java.math.BigDecimal;
 
 @Data
@@ -23,9 +25,9 @@ public class BillDetails {
     private Bill bill;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "product_id", nullable = false)
+    @JoinColumn(name = "product_details_id", nullable = false) // Sửa tên cột khóa ngoại
     @NotNull
-    private Product product;
+    private ProductDetails productDetails; // Thay Product bằng ProductDetails
 
     @NotNull
     @Column(nullable = false)
