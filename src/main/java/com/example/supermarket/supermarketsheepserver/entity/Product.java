@@ -6,10 +6,13 @@ import jakarta.persistence.*;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import java.time.LocalDateTime;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 @Data
@@ -60,8 +63,6 @@ public class Product {
     @OneToMany(mappedBy = "product")
     private Set<ProductCategory> productCategories = new HashSet<>();
 
-
-
     @JsonIgnore
     @OneToMany(mappedBy = "product")
     private Set<ProductPhoto> productPhotos = new HashSet<>();
@@ -70,7 +71,17 @@ public class Product {
     @OneToMany(mappedBy = "product")
     private Set<ProductDetails> productDetails = new HashSet<>();
 
+    @JdbcTypeCode(SqlTypes.JSON)
+    @Column(columnDefinition = "json")
+    private List<String> sizes;
 
+    @JdbcTypeCode(SqlTypes.JSON)
+    @Column(columnDefinition = "json")
+    private List<String> colors;
+
+    @JdbcTypeCode(SqlTypes.JSON)
+    @Column(columnDefinition = "json")
+    private List<String> materials;
 
     @PrePersist
     protected void onCreate() {

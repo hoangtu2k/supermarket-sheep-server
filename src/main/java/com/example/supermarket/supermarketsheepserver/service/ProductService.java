@@ -31,8 +31,8 @@ public class ProductService {
     public List<ProductRequest> getAllProductsAsDto() {
         List<Product> products = productRepository.findByStatus(ProductStatus.ACTIVE);
         return products.stream().map(product -> {
-            product.getProductPhotos().size(); // Trigger lazy loading
-            product.getProductDetails().size(); // Trigger lazy loading
+            product.getProductPhotos().size();
+            product.getProductDetails().size();
             return mapToProductRequest(product);
         }).collect(Collectors.toList());
     }
@@ -40,8 +40,8 @@ public class ProductService {
     public List<ProductRequest> getProductsByStatusAsDto(ProductStatus status) {
         List<Product> products = productRepository.findByStatus(status);
         return products.stream().map(product -> {
-            product.getProductPhotos().size(); // Trigger lazy loading
-            product.getProductDetails().size(); // Trigger lazy loading
+            product.getProductPhotos().size();
+            product.getProductDetails().size();
             return mapToProductRequest(product);
         }).collect(Collectors.toList());
     }
@@ -65,11 +65,13 @@ public class ProductService {
                 .weight(request.getWeight())
                 .quantity(request.getQuantity() != null ? request.getQuantity() : 0)
                 .status(ProductStatus.ACTIVE)
+                .sizes(request.getSizes() != null ? request.getSizes() : new ArrayList<>())
+                .colors(request.getColors() != null ? request.getColors() : new ArrayList<>()) // Thêm colors
+                .materials(request.getMaterials() != null ? request.getMaterials() : new ArrayList<>()) // Thêm materials
                 .build();
 
         Product savedProduct = productRepository.save(product);
 
-        // Xử lý danh sách danh mục
         if (request.getCategoryIds() != null && !request.getCategoryIds().isEmpty()) {
             for (Long categoryId : request.getCategoryIds()) {
                 Category category = categoryRepository.findById(categoryId)
@@ -82,12 +84,10 @@ public class ProductService {
             }
         }
 
-        // Xử lý chi tiết sản phẩm
         if (request.getProductDetails() != null && !request.getProductDetails().isEmpty()) {
             saveProductDetails(request.getProductDetails(), savedProduct);
         }
 
-        // Xử lý ảnh sản phẩm
         if (request.getMainImage() != null || (request.getNotMainImages() != null && !request.getNotMainImages().isEmpty())) {
             saveProductPhotos(request, savedProduct);
         }
@@ -105,11 +105,12 @@ public class ProductService {
         existingProduct.setWeight(request.getWeight());
         existingProduct.setQuantity(request.getQuantity() != null ? request.getQuantity() : 0);
         existingProduct.setStatus(request.getStatus() != null ? ProductStatus.valueOf(request.getStatus()) : ProductStatus.ACTIVE);
+        existingProduct.setSizes(request.getSizes() != null ? request.getSizes() : new ArrayList<>());
+        existingProduct.setColors(request.getColors() != null ? request.getColors() : new ArrayList<>()); // Cập nhật colors
+        existingProduct.setMaterials(request.getMaterials() != null ? request.getMaterials() : new ArrayList<>()); // Cập nhật materials
 
-        // Xóa các danh mục cũ
         productCategoryRepository.deleteByProductId(productId);
 
-        // Thêm danh mục mới
         if (request.getCategoryIds() != null && !request.getCategoryIds().isEmpty()) {
             for (Long categoryId : request.getCategoryIds()) {
                 Category category = categoryRepository.findById(categoryId)
@@ -122,10 +123,7 @@ public class ProductService {
             }
         }
 
-        // Cập nhật chi tiết sản phẩm
         updateProductDetails(existingProduct, request.getProductDetails());
-
-        // Cập nhật ảnh sản phẩm
         updateProductPhotos(existingProduct, request);
 
         return productRepository.save(existingProduct);
@@ -271,16 +269,11 @@ public class ProductService {
                 .weight(product.getWeight())
                 .quantity(product.getQuantity())
                 .status(product.getStatus().name())
+                .sizes(product.getSizes())
+                .colors(product.getColors()) // Trả về colors
+                .materials(product.getMaterials()) // Trả về materials
                 .build();
 
-        // Ánh xạ danh mục
-        List<Long> categoryIds = productCategoryRepository.findByProductId(product.getId())
-                .stream()
-                .map(productCategory -> productCategory.getCategory().getId())
-                .collect(Collectors.toList());
-        request.setCategoryIds(categoryIds);
-
-        // Ánh xạ ảnh sản phẩm
         if (product.getProductPhotos() != null) {
             product.getProductPhotos().stream()
                     .filter(ProductPhoto::getMainImage)
@@ -297,7 +290,6 @@ public class ProductService {
             request.setNotMainImages(notMainImages);
         }
 
-        // Ánh xạ chi tiết sản phẩm
         if (product.getProductDetails() != null) {
             List<ProductDetailsRequest> details = product.getProductDetails().stream()
                     .map(detail -> ProductDetailsRequest.builder()
@@ -310,6 +302,12 @@ public class ProductService {
                     .collect(Collectors.toList());
             request.setProductDetails(details);
         }
+
+        List<Long> categoryIds = productCategoryRepository.findByProductId(product.getId())
+                .stream()
+                .map(productCategory -> productCategory.getCategory().getId())
+                .collect(Collectors.toList());
+        request.setCategoryIds(categoryIds);
 
         return request;
     }

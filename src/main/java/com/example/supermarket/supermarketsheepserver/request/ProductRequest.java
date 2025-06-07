@@ -44,4 +44,8 @@ public class ProductRequest {
 
     private List<Long> categoryIds; // Thêm danh sách ID danh mục
 
+    private List<String> sizes;
+    private List<String> colors; // Thêm mới
+    private List<String> materials; // Thêm mới
+
 }
