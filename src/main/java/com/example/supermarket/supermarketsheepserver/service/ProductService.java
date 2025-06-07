@@ -18,6 +18,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Slf4j
 @Service
@@ -30,6 +31,24 @@ public class ProductService {
     private final UnitRepository unitRepository;
     private final CategoryRepository categoryRepository;
     private final ProductCategoryRepository productCategoryRepository;
+
+    public List<ProductRequest> searchProducts(String keyword) {
+        if (keyword == null || keyword.trim().isEmpty()) {
+            return productRepository.findByStatus(ProductStatus.ACTIVE).stream()
+                    .filter(Objects::nonNull)
+                    .map(this::mapToProductRequest)
+                    .filter(Objects::nonNull)
+                    .collect(Collectors.toList());
+        }
+
+        return productRepository.findByNameOrBarCodeContainingIgnoreCase(keyword, ProductStatus.ACTIVE).stream()
+                .filter(Objects::nonNull)
+                .map(this::mapToProductRequest)
+                .filter(Objects::nonNull)
+                .collect(Collectors.toList());
+    }
+
+
 
     // Existing checkSKUExists and checkBarcodeExists remain unchanged
     public boolean checkSKUExists(String code, Long excludeId) {

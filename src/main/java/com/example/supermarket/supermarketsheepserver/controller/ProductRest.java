@@ -6,6 +6,7 @@ import com.example.supermarket.supermarketsheepserver.request.ProductRequest;
 import com.example.supermarket.supermarketsheepserver.service.ProductService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -64,4 +65,23 @@ public class ProductRest {
         boolean exists = productService.checkBarcodeExists(barCode, excludeProductId);
         return ResponseEntity.ok(Map.of("exists", exists));
     }
+
+    @GetMapping("/search")
+    public ResponseEntity<?> searchProducts(@RequestParam String keyword) {
+        try {
+            List<ProductRequest> products = productService.searchProducts(keyword);
+            return ResponseEntity.ok(products);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new ErrorResponse("Failed to search products: " + e.getMessage()));
+        }
+    }
+
+    static class ErrorResponse {
+        private final String message;
+        public ErrorResponse(String message) { this.message = message; }
+        public String getMessage() { return message; }
+    }
+
 }

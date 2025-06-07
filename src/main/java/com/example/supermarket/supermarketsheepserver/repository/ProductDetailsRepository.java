@@ -25,4 +25,8 @@ public interface ProductDetailsRepository extends JpaRepository<ProductDetails, 
     // Sửa phương thức để dùng unitId thay vì Unit enum
     Optional<ProductDetails> findByProductIdAndUnitId(@Param("productDetailsId") Long productDetailsId, @Param("unitId") Long unitId);
 
+    @Query("SELECT pd FROM ProductDetails pd WHERE " +
+            "(LOWER(pd.barCode) LIKE LOWER(CONCAT('%', :barCode, '%')) OR pd.barCode IS NULL)")
+    List<ProductDetails> findByBarCodeContainingIgnoreCase(String barCode);
+
 }
