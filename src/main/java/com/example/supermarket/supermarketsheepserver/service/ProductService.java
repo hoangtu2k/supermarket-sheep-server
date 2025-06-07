@@ -1,14 +1,8 @@
 package com.example.supermarket.supermarketsheepserver.service;
 
-import com.example.supermarket.supermarketsheepserver.entity.Product;
-import com.example.supermarket.supermarketsheepserver.entity.ProductDetails;
-import com.example.supermarket.supermarketsheepserver.entity.ProductPhoto;
-import com.example.supermarket.supermarketsheepserver.entity.Unit;
+import com.example.supermarket.supermarketsheepserver.entity.*;
 import com.example.supermarket.supermarketsheepserver.entity.Product.ProductStatus;
-import com.example.supermarket.supermarketsheepserver.repository.ProductDetailsRepository;
-import com.example.supermarket.supermarketsheepserver.repository.ProductPhotoRepository;
-import com.example.supermarket.supermarketsheepserver.repository.ProductRepository;
-import com.example.supermarket.supermarketsheepserver.repository.UnitRepository;
+import com.example.supermarket.supermarketsheepserver.repository.*;
 import com.example.supermarket.supermarketsheepserver.request.ProductDetailsRequest;
 import com.example.supermarket.supermarketsheepserver.request.ProductRequest;
 import jakarta.persistence.EntityNotFoundException;
@@ -30,7 +24,9 @@ public class ProductService {
     private final ProductRepository productRepository;
     private final ProductDetailsRepository productDetailsRepository;
     private final ProductPhotoRepository productPhotoRepository;
-    private final UnitRepository unitRepository; // Thêm repository cho Unit
+    private final UnitRepository unitRepository;
+    private final CategoryRepository categoryRepository;
+    private final ProductCategoryRepository productCategoryRepository;
 
     public List<ProductRequest> getAllProductsAsDto() {
         List<Product> products = productRepository.findByStatus(ProductStatus.ACTIVE);
@@ -62,7 +58,7 @@ public class ProductService {
     }
 
     @Transactional
-    public Product createProduct(@Valid ProductRequest request) {
+    public Product createProduct(ProductRequest request) {
         Product product = Product.builder()
                 .name(request.getName())
                 .description(request.getDescription())
@@ -73,15 +69,74 @@ public class ProductService {
 
         Product savedProduct = productRepository.save(product);
 
+        // Xử lý danh sách danh mục
+        if (request.getCategoryIds() != null && !request.getCategoryIds().isEmpty()) {
+            for (Long categoryId : request.getCategoryIds()) {
+                Category category = categoryRepository.findById(categoryId)
+                        .orElseThrow(() -> new EntityNotFoundException("Category not found with id: " + categoryId));
+                ProductCategory productCategory = ProductCategory.builder()
+                        .product(savedProduct)
+                        .category(category)
+                        .build();
+                productCategoryRepository.save(productCategory);
+            }
+        }
+
+        // Xử lý chi tiết sản phẩm
         if (request.getProductDetails() != null && !request.getProductDetails().isEmpty()) {
             saveProductDetails(request.getProductDetails(), savedProduct);
         }
 
+        // Xử lý ảnh sản phẩm
         if (request.getMainImage() != null || (request.getNotMainImages() != null && !request.getNotMainImages().isEmpty())) {
             saveProductPhotos(request, savedProduct);
         }
 
         return savedProduct;
+    }
+
+    @Transactional
+    public Product updateProduct(Long productId, @Valid ProductRequest request) {
+        Product existingProduct = productRepository.findById(productId)
+                .orElseThrow(() -> new EntityNotFoundException("Product not found with id: " + productId));
+
+        existingProduct.setName(request.getName());
+        existingProduct.setDescription(request.getDescription());
+        existingProduct.setWeight(request.getWeight());
+        existingProduct.setQuantity(request.getQuantity() != null ? request.getQuantity() : 0);
+        existingProduct.setStatus(request.getStatus() != null ? ProductStatus.valueOf(request.getStatus()) : ProductStatus.ACTIVE);
+
+        // Xóa các danh mục cũ
+        productCategoryRepository.deleteByProductId(productId);
+
+        // Thêm danh mục mới
+        if (request.getCategoryIds() != null && !request.getCategoryIds().isEmpty()) {
+            for (Long categoryId : request.getCategoryIds()) {
+                Category category = categoryRepository.findById(categoryId)
+                        .orElseThrow(() -> new EntityNotFoundException("Category not found with id: " + categoryId));
+                ProductCategory productCategory = ProductCategory.builder()
+                        .product(existingProduct)
+                        .category(category)
+                        .build();
+                productCategoryRepository.save(productCategory);
+            }
+        }
+
+        // Cập nhật chi tiết sản phẩm
+        updateProductDetails(existingProduct, request.getProductDetails());
+
+        // Cập nhật ảnh sản phẩm
+        updateProductPhotos(existingProduct, request);
+
+        return productRepository.save(existingProduct);
+    }
+
+    @Transactional
+    public Product changeProductStatus(Long productId, String status) {
+        Product product = productRepository.findById(productId)
+                .orElseThrow(() -> new EntityNotFoundException("Product not found with id: " + productId));
+        product.setStatus(ProductStatus.valueOf(status));
+        return productRepository.save(product);
     }
 
     private void saveProductDetails(List<ProductDetailsRequest> detailsRequests, Product product) {
@@ -126,23 +181,6 @@ public class ProductService {
         if (!photos.isEmpty()) {
             productPhotoRepository.saveAll(photos);
         }
-    }
-
-    @Transactional
-    public Product updateProduct(Long productId, @Valid ProductRequest request) {
-        Product existingProduct = productRepository.findById(productId)
-                .orElseThrow(() -> new EntityNotFoundException("Product not found with id: " + productId));
-
-        existingProduct.setName(request.getName());
-        existingProduct.setDescription(request.getDescription());
-        existingProduct.setWeight(request.getWeight());
-        existingProduct.setQuantity(request.getQuantity() != null ? request.getQuantity() : 0);
-        existingProduct.setStatus(request.getStatus() != null ? ProductStatus.valueOf(request.getStatus()) : ProductStatus.ACTIVE);
-
-        updateProductDetails(existingProduct, request.getProductDetails());
-        updateProductPhotos(existingProduct, request);
-
-        return productRepository.save(existingProduct);
     }
 
     private void updateProductDetails(Product product, List<ProductDetailsRequest> detailsRequests) {
@@ -225,14 +263,6 @@ public class ProductService {
         }
     }
 
-    @Transactional
-    public Product changeProductStatus(Long productId, String status) {
-        Product product = productRepository.findById(productId)
-                .orElseThrow(() -> new EntityNotFoundException("Product not found with id: " + productId));
-        product.setStatus(ProductStatus.valueOf(status));
-        return productRepository.save(product);
-    }
-
     private ProductRequest mapToProductRequest(Product product) {
         ProductRequest request = ProductRequest.builder()
                 .id(product.getId())
@@ -243,6 +273,14 @@ public class ProductService {
                 .status(product.getStatus().name())
                 .build();
 
+        // Ánh xạ danh mục
+        List<Long> categoryIds = productCategoryRepository.findByProductId(product.getId())
+                .stream()
+                .map(productCategory -> productCategory.getCategory().getId())
+                .collect(Collectors.toList());
+        request.setCategoryIds(categoryIds);
+
+        // Ánh xạ ảnh sản phẩm
         if (product.getProductPhotos() != null) {
             product.getProductPhotos().stream()
                     .filter(ProductPhoto::getMainImage)
@@ -259,12 +297,13 @@ public class ProductService {
             request.setNotMainImages(notMainImages);
         }
 
+        // Ánh xạ chi tiết sản phẩm
         if (product.getProductDetails() != null) {
             List<ProductDetailsRequest> details = product.getProductDetails().stream()
                     .map(detail -> ProductDetailsRequest.builder()
                             .id(detail.getId())
                             .code(detail.getCode())
-                            .unitId(detail.getUnit().getId()) // Sử dụng unitId thay vì unit name
+                            .unitId(detail.getUnit().getId())
                             .conversionRate(detail.getConversionRate())
                             .price(detail.getPrice())
                             .build())

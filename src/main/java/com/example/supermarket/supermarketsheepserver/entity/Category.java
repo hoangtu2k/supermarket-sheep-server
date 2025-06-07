@@ -30,7 +30,6 @@ public class Category {
         ACTIVE, INACTIVE
     }
 
-
     @Enumerated(EnumType.STRING)
     @NotNull
     @Column(nullable = false)
@@ -43,9 +42,9 @@ public class Category {
     @LastModifiedDate
     private LocalDateTime updatedAt;
 
-    @JsonIgnore
     @OneToMany(mappedBy = "category")
-    private Set<ProductType> productTypes = new HashSet<>();
+    private Set<ProductCategory> productCategories = new HashSet<>();
+
 
     @PrePersist
     protected void onCreate() {

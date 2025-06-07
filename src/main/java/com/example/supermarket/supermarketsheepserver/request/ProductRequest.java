@@ -41,4 +41,7 @@ public class ProductRequest {
     private String imageUrl;
 
     private List<String> notMainImages;
+
+    private List<Long> categoryIds; // Thêm danh sách ID danh mục
+
 }

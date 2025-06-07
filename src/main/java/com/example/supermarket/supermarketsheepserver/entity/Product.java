@@ -57,9 +57,10 @@ public class Product {
     @JoinColumn(name = "supplier_id")
     private Supplier supplier;
 
-    @ManyToOne
-    @JoinColumn(name = "product_type_id")
-    private ProductType productType;
+    @OneToMany(mappedBy = "product")
+    private Set<ProductCategory> productCategories = new HashSet<>();
+
+
 
     @JsonIgnore
     @OneToMany(mappedBy = "product")
@@ -68,6 +69,8 @@ public class Product {
     @JsonIgnore
     @OneToMany(mappedBy = "product")
     private Set<ProductDetails> productDetails = new HashSet<>();
+
+
 
     @PrePersist
     protected void onCreate() {
