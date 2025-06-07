@@ -4,6 +4,7 @@ import com.example.supermarket.supermarketsheepserver.entity.Product;
 import com.example.supermarket.supermarketsheepserver.entity.ProductDetails;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
@@ -23,4 +24,5 @@ public interface ProductDetailsRepository extends JpaRepository<ProductDetails, 
 
     // Sửa phương thức để dùng unitId thay vì Unit enum
     Optional<ProductDetails> findByProductIdAndUnitId(@Param("productDetailsId") Long productDetailsId, @Param("unitId") Long unitId);
+
 }

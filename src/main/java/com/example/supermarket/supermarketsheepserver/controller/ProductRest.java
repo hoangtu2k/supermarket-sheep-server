@@ -10,6 +10,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/admin/products")
@@ -50,5 +51,17 @@ public class ProductRest {
     public ResponseEntity<ProductRequest> changeProductStatus(@PathVariable Long id, @RequestParam String status) {
         Product updatedProduct = productService.changeProductStatus(id, status);
         return ResponseEntity.ok(productService.getProductByIdAsDto(updatedProduct.getId()));
+    }
+
+    @GetMapping("/check-sku")
+    public ResponseEntity<Map<String, Boolean>> checkSKU(@RequestParam String code, @RequestParam(required = false) Long excludeId) {
+        boolean exists = productService.checkSKUExists(code, excludeId);
+        return ResponseEntity.ok(Map.of("exists", exists));
+    }
+
+    @GetMapping("/check-barcode")
+    public ResponseEntity<Map<String, Boolean>> checkBarcode(@RequestParam String barCode, @RequestParam(required = false) Long excludeProductId) {
+        boolean exists = productService.checkBarcodeExists(barCode, excludeProductId);
+        return ResponseEntity.ok(Map.of("exists", exists));
     }
 }

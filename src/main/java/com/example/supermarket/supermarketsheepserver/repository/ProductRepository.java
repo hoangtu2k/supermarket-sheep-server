@@ -14,4 +14,17 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
     @Query("SELECT DISTINCT p FROM Product p LEFT JOIN FETCH p.productDetails pd WHERE p.status = :status ORDER BY p.createDate DESC")
     List<Product> findByStatus(ProductStatus status);
 
+    // Check if a product with the given code exists
+    boolean existsByCode(String code);
+
+    // Check if a product with the given code exists, excluding a specific product ID
+    boolean existsByCodeAndIdNot(String code, Long id);
+
+    // Check if a barcode exists in any product detail
+    @Query("SELECT CASE WHEN COUNT(pd) > 0 THEN true ELSE false END FROM ProductDetails pd WHERE pd.barCode = :barCode")
+    boolean existsByProductDetailsBarCode(String barCode);
+
+    // Check if a barcode exists, excluding product details of a specific product ID
+    @Query("SELECT CASE WHEN COUNT(pd) > 0 THEN true ELSE false END FROM ProductDetails pd WHERE pd.barCode = :barCode AND pd.product.id != :excludeProductId")
+    boolean existsByProductDetailsBarCodeAndProductIdNot(String barCode, Long excludeProductId);
 }

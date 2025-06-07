@@ -1,4 +1,3 @@
-// Product.java
 package com.example.supermarket.supermarketsheepserver.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -27,6 +26,10 @@ public class Product {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
+    @NotNull
+    @Column(nullable = false, unique = true)
+    private String code; // Thêm trường code
 
     @NotNull
     private String name;

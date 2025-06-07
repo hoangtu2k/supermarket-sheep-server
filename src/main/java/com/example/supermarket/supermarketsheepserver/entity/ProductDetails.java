@@ -1,4 +1,3 @@
-// ProductDetails.java
 package com.example.supermarket.supermarketsheepserver.entity;
 
 import jakarta.persistence.*;
@@ -21,7 +20,7 @@ public class ProductDetails {
 
     @NotNull
     @Column(nullable = false, unique = true)
-    private String code;
+    private String barCode;
 
     @ManyToOne
     @JoinColumn(name = "unit_id")

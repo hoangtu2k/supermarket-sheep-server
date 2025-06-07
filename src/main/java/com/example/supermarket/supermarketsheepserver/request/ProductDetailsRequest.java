@@ -16,7 +16,7 @@ public class ProductDetailsRequest {
 
     @NotBlank(message = "Code is required")
     @Size(max = 50, message = "Code cannot exceed 50 characters")
-    private String code;
+    private String barCode;
 
     @NotNull(message = "Unit ID is required")
     private Long unitId; // Tham chiếu đến ID của Unit
