@@ -52,12 +52,11 @@ public class BillService {
         // Process items and update product quantities
         List<BillDetails> billDetails = new ArrayList<>();
         for (BillItemRequest item : request.items()) {
-            // Find product details by productId and unitId
-            ProductDetails productDetails = productDetailsRepository.findByProductIdAndUnitId(
-                    item.productId(), item.unitId()
-            ).orElseThrow(() -> new IllegalArgumentException(
-                    "Product details not found for productId " + item.productId() + " and unitId " + item.unitId()
-            ));
+            // Find product details by productDetailsId
+            ProductDetails productDetails = productDetailsRepository.findById(item.productDetailsId())
+                    .orElseThrow(() -> new IllegalArgumentException(
+                            "Product details not found for productDetailsId: " + item.productDetailsId()
+                    ));
 
             // Get the associated product
             Product product = productDetails.getProduct();
@@ -80,10 +79,10 @@ public class BillService {
             // Create BillDetails
             BillDetails details = BillDetails.builder()
                     .bill(bill)
-                    .productDetails(productDetails) // Sử dụng productDetails thay vì product
+                    .productDetails(productDetails)
                     .quantity(item.quantity())
-                    .unitPrice(item.unitPrice()) // Lấy từ request hoặc có thể lấy từ productDetails.getPrice()
-                    .subtotal(item.subtotal())   // Lấy từ request hoặc tính toán
+                    .unitPrice(item.unitPrice())
+                    .subtotal(item.subtotal())
                     .build();
             billDetails.add(details);
         }
@@ -104,4 +103,5 @@ public class BillService {
                 savedBill.getTotalAmount()
         );
     }
+
 }

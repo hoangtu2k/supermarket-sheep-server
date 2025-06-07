@@ -22,5 +22,5 @@ public interface ProductDetailsRepository extends JpaRepository<ProductDetails, 
     void deleteByProduct(@Param("product") Product product);
 
     // Sửa phương thức để dùng unitId thay vì Unit enum
-    Optional<ProductDetails> findByProductIdAndUnitId(@Param("productId") Long productId, @Param("unitId") Long unitId);
+    Optional<ProductDetails> findByProductIdAndUnitId(@Param("productDetailsId") Long productDetailsId, @Param("unitId") Long unitId);
 }
